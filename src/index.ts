@@ -54,6 +54,17 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   console.log(`Real-time Socket.io initialized ⚡`);
+
+  // KeepAlive: Self-ping every 14 minutes to prevent Render free tier from sleeping
+  const SELF_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+  setInterval(async () => {
+    try {
+      const response = await fetch(SELF_URL);
+      console.log(`[KeepAlive] Self-ping successful: ${response.status}`);
+    } catch (err) {
+      console.warn(`[KeepAlive] Self-ping failed:`, err);
+    }
+  }, 14 * 60 * 1000); // Every 14 minutes
 });
 
 export { io };
