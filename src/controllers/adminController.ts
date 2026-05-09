@@ -138,3 +138,39 @@ export const getProjects = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+export const getFinancialStats = async (req: Request, res: Response) => {
+  try {
+    const [totalVolume, platformFees, recentTransactions] = await Promise.all([
+      prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { status: 'COMPLETED' }
+      }),
+      // Assuming 10% fee for demo purposes
+      prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { status: 'COMPLETED' }
+      }).then(res => (res._sum.amount || 0) * 0.1),
+      prisma.transaction.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          client: { select: { name: true, email: true } },
+          freelancer: { select: { name: true, email: true } }
+        }
+      })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalVolume: totalVolume._sum.amount || 0,
+        platformFees,
+        payouts: (totalVolume._sum.amount || 0) * 0.9,
+        recentTransactions
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
