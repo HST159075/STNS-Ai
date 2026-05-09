@@ -129,3 +129,23 @@ export const getProjectById = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+export const getMyProjects = async (req: Request, res: Response) => {
+  const userId = (req as any).auth?.userId;
+
+  try {
+    const projects = await prisma.project.findMany({
+      where: { clientId: userId },
+      include: {
+        _count: {
+          select: { bids: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.status(200).json({ success: true, projects });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
