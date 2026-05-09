@@ -13,6 +13,6 @@ services:
       - key: BETTER_AUTH_URL
         value: https://stns-ai.onrender.com/api/auth
       - key: FRONTEND_URL
-        value: https://stnc-ai-frontend.onrender.com
+        value: https://nexus-jjvc.onrender.com
       - key: PORT
         value: 10000
