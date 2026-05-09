@@ -17,7 +17,7 @@ const router = Router();
 router.use(aiLimiter);
 
 router.get('/insights', requireAuth, getSmartInsights);
-router.post('/chat', chatWithAI);
+router.post('/chat', requireAuth, chatWithAI);
 router.post('/generate-brief', requireAuth, generateProjectBrief);
 router.post('/cover-letter', requireAuth, generateCoverLetter);
 router.post('/suggest-tags', requireAuth, suggestProjectTags);

@@ -1,31 +1,52 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
+import { ProjectCreateSchema } from '../utils/zodSchemas';
+import logger from '../utils/logger';
 
 export const createProject = async (req: Request, res: Response) => {
-  const { title, description, budgetMin, budgetMax, tags, category } = req.body;
   const clientId = (req as any).auth?.userId;
 
   if (!clientId) {
-    return res.status(401).json({ success: false, message: "Unauthorized: User must be logged in to post a project." });
+    return res.status(401).json({ 
+      success: false, 
+      message: "Unauthorized: You must be logged in to post a project." 
+    });
   }
+
+  // Validate Input
+  const validation = ProjectCreateSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Validation failed", 
+      errors: validation.error.flatten().fieldErrors 
+    });
+  }
+
+  const { title, description, budgetMin, budgetMax, tags, category } = validation.data;
 
   try {
     const project = await prisma.project.create({
       data: {
         title,
         description,
-        budgetMin: Number(budgetMin),
-        budgetMax: Number(budgetMax),
+        budgetMin,
+        budgetMax,
         clientId,
-        tags,
+        tags: tags || [],
         category,
         status: 'OPEN',
       },
     });
 
+    logger.info(`Project created: ${project.id} by client ${clientId}`);
     res.status(201).json({ success: true, project });
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    logger.error(`Error creating project: ${error.message}`);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error while creating project. Please try again later." 
+    });
   }
 };
 
