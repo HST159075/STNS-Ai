@@ -23,7 +23,7 @@ export const createProject = async (req: Request, res: Response) => {
     });
   }
 
-  const { title, description, budgetMin, budgetMax, tags, category } = validation.data;
+  const { title, description, budgetMin, budgetMax, tags, category, imageUrl } = validation.data;
 
   try {
     const project = await prisma.project.create({
@@ -35,6 +35,7 @@ export const createProject = async (req: Request, res: Response) => {
         clientId,
         tags: tags || [],
         category,
+        imageUrl,
         status: 'OPEN',
       },
     });

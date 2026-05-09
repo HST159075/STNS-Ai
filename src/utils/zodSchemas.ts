@@ -14,6 +14,7 @@ export const ProjectCreateSchema = z.object({
   budgetMax: z.number().positive("Budget must be positive"),
   tags: z.array(z.string()).optional(),
   category: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
 export const BidCreateSchema = z.object({
