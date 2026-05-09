@@ -11,7 +11,7 @@ services:
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: BETTER_AUTH_URL
-        value: https://stns-ai-backend.onrender.com/api/auth
+        value: https://stns-ai.onrender.com/api/auth
       - key: FRONTEND_URL
         value: https://stnc-ai-frontend.onrender.com
       - key: PORT
