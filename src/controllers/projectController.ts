@@ -2,7 +2,12 @@ import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 
 export const createProject = async (req: Request, res: Response) => {
-  const { title, description, budgetMin, budgetMax, clientId, tags, category } = req.body;
+  const { title, description, budgetMin, budgetMax, tags, category } = req.body;
+  const clientId = (req as any).auth?.userId;
+
+  if (!clientId) {
+    return res.status(401).json({ success: false, message: "Unauthorized: User must be logged in to post a project." });
+  }
 
   try {
     const project = await prisma.project.create({

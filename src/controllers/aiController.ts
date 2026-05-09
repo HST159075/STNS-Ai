@@ -215,6 +215,12 @@ export const auditProjectBids = async (req: Request, res: Response) => {
     }) as any;
 
     if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+
+    // SECURITY CHECK: Only the project owner can audit bids
+    if (project.clientId !== (req as any).auth?.userId) {
+      return res.status(403).json({ success: false, message: "Forbidden: Only the project owner can audit bids." });
+    }
+
     if (!project.bids || project.bids.length === 0) {
       return res.status(200).json({ success: true, analysis: [], message: "No bids to analyze yet." });
     }
