@@ -10,12 +10,20 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'nexus_market',
-    resource_type: 'auto',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'pdf', 'doc', 'docx', 'txt'],
-  } as any,
+  params: async (req: any, file: any) => {
+    return {
+      folder: 'nexus_market',
+      resource_type: 'auto',
+      public_id: `${Date.now()}-${file.originalname.split('.')[0]}`,
+    };
+  },
 });
 
-export const upload = multer({ storage });
+export const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  }
+});
+
 export default cloudinary;

@@ -4,8 +4,13 @@ import { upload } from '../config/cloudinary';
 const router = Router();
 
 // Endpoint for single image upload
-router.post('/image', upload.single('image'), (req: any, res: any) => {
-  try {
+router.post('/image', (req, res, next) => {
+  upload.single('image')(req, res, (err: any) => {
+    if (err) {
+      console.error('Multer/Cloudinary Error:', err);
+      return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
+    }
+    
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
@@ -15,14 +20,17 @@ router.post('/image', upload.single('image'), (req: any, res: any) => {
       imageUrl: req.file.path, 
       publicId: req.file.filename 
     });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+  });
 });
 
 // Endpoint for generic file upload
-router.post('/file', upload.single('file'), (req: any, res: any) => {
-  try {
+router.post('/file', (req, res, next) => {
+  upload.single('file')(req, res, (err: any) => {
+    if (err) {
+      console.error('Multer/Cloudinary Error:', err);
+      return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
+    }
+
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
@@ -34,9 +42,7 @@ router.post('/file', upload.single('file'), (req: any, res: any) => {
       originalName: req.file.originalname,
       mimeType: req.file.mimetype
     });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+  });
 });
 
 export default router;
