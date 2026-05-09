@@ -34,4 +34,10 @@ export const auth = betterAuth({
             clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
         },
     },
+    advanced: {
+        cookieOptions: {
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            secure: process.env.NODE_ENV === "production",
+        }
+    }
 });
