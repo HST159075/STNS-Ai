@@ -238,6 +238,8 @@ model Message {
   senderId       String
   conversationId String?
   isRead         Boolean       @default(false)
+  attachmentUrl  String?
+  attachmentType String?
   createdAt      DateTime      @default(now())
   conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User          @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)

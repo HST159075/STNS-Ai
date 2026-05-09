@@ -95,11 +95,11 @@ export const getConversationMessages = async (req: Request, res: Response) => {
 
 export const sendDirectMessage = async (req: Request, res: Response) => {
   const conversationId = String(req.params.conversationId);
-  const { content } = req.body;
+  const { content, attachmentUrl, attachmentType } = req.body;
   const senderId = (req as any).auth?.userId;
 
   if (!senderId) return res.status(401).json({ success: false, error: "Unauthorized" });
-  if (!content) return res.status(400).json({ success: false, error: "Content is required" });
+  if (!content && !attachmentUrl) return res.status(400).json({ success: false, error: "Content or attachment is required" });
 
   try {
     // Verify user is a participant
@@ -119,9 +119,11 @@ export const sendDirectMessage = async (req: Request, res: Response) => {
 
     const message = await prisma.message.create({
       data: {
-        content: String(content),
+        content: String(content || ""),
         senderId: String(senderId),
-        conversationId: conversationId
+        conversationId: conversationId,
+        attachmentUrl: attachmentUrl || null,
+        attachmentType: attachmentType || null,
       },
       include: {
         sender: { select: { id: true, name: true, avatarUrl: true } }

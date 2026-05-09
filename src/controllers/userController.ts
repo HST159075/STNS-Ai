@@ -82,10 +82,12 @@ export const getUserProfile = async (req: Request, res: Response) => {
 export const updateProfile = async (req: Request, res: Response) => {
   const userId = (req as any).auth?.userId;
   const { 
-    name, image, bio, location, hourlyRate, portfolioUrl, githubUrl,
+    name, image, avatarUrl, bio, location, hourlyRate, portfolioUrl, githubUrl,
     firstName, lastName, dob, nationality, phoneNumber, serviceType,
     role, skills
   } = req.body;
+
+  const finalImage = image || avatarUrl;
 
   try {
     // 1. Update basic fields
@@ -93,8 +95,8 @@ export const updateProfile = async (req: Request, res: Response) => {
       where: { id: userId },
       data: {
         name,
-        image,
-        avatarUrl: image, // Sync avatarUrl for consistency
+        image: finalImage,
+        avatarUrl: finalImage, // Sync avatarUrl for consistency
         bio,
         location,
         hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,

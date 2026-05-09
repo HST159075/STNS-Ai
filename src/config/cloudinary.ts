@@ -12,7 +12,8 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'nexus_market',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+    resource_type: 'auto',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'pdf', 'doc', 'docx', 'txt'],
   } as any,
 });
 
