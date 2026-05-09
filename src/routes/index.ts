@@ -1,0 +1,40 @@
+import { Router } from 'express';
+import userRoutes from './userRoutes';
+import projectRoutes from './projectRoutes';
+import bidRoutes from './bidRoutes';
+import contractRoutes from './contractRoutes';
+import messageRoutes from './messageRoutes';
+import reviewRoutes from './reviewRoutes';
+import portfolioRoutes from './portfolioRoutes';
+import blogRoutes from './blogRoutes';
+import notificationRoutes from './notificationRoutes';
+import transactionRoutes from './transactionRoutes';
+import reportRoutes from './reportRoutes';
+import bookmarkRoutes from './bookmarkRoutes';
+import aiRoutes from './aiRoutes';
+import auditRoutes from './auditRoutes';
+import skillRoutes from './skillRoutes';
+import adminRoutes from './adminRoutes';
+import uploadRoutes from './uploadRoutes';
+
+const router = Router();
+
+router.use('/users', userRoutes);
+router.use('/admin', adminRoutes);
+router.use('/projects', projectRoutes);
+router.use('/bids', bidRoutes);
+router.use('/contracts', contractRoutes);
+router.use('/messages', messageRoutes);
+router.use('/reviews', reviewRoutes);
+router.use('/portfolios', portfolioRoutes);
+router.use('/blogs', blogRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/transactions', transactionRoutes);
+router.use('/reports', reportRoutes);
+router.use('/bookmarks', bookmarkRoutes);
+router.use('/ai', aiRoutes);
+router.use('/audit', auditRoutes);
+router.use('/skills', skillRoutes);
+router.use('/uploads', uploadRoutes);
+
+export default router;

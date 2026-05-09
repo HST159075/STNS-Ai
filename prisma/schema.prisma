@@ -1,0 +1,541 @@
+generator client {
+  provider   = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Custom Marketplace Fields
+  role           Role     @default(CLIENT)
+  isOnboarded    Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  firstName      String?
+  lastName       String?
+  dob            DateTime?
+  nationality    String?
+  phoneNumber    String?
+  serviceType    String?
+  avatarUrl      String?
+  avatarPublicId String?
+  bio            String?
+  location       String?
+  hourlyRate     Float?
+  portfolioUrl   String?
+  githubUrl      String?
+  completedJobs  Int      @default(0)
+  activeJobs     Int      @default(0)
+  totalEarnings  Float    @default(0)
+  avgRating      Float    @default(0)
+  totalReviews   Int      @default(0)
+  successRate    Float    @default(0)
+  
+  // Application Fields
+  applicationStatus ApplicationStatus @default(NONE)
+  freelancerApplicationData Json?
+
+  // Relations
+  sessions             Session[]
+  accounts             Account[]
+  aiLogs               AiLog[]
+  auditLogs            AuditLog[]     @relation("AdminAuditLogs")
+  bids                 Bid[]          @relation("FreelancerBids")
+  blogs                Blog[]
+  bookmarks            Bookmark[]
+  clientContracts      Contract[]     @relation("ClientContracts")
+  freelanceContracts   Contract[]     @relation("FreelancerContracts")
+  sentMessages         Message[]      @relation("SentMessages")
+  notifications        Notification[]
+  portfolios           Portfolio[]
+  postedProjects       Project[]      @relation("ClientProjects")
+  reports              Report[]       @relation("ReportedBy")
+  receivedReviews      Review[]       @relation("ReviewReceived")
+  givenReviews         Review[]       @relation("ReviewGiven")
+  sentTransactions     Transaction[]  @relation("ClientTransactions")
+  receivedTransactions Transaction[]  @relation("FreelancerTransactions")
+  skills               UserSkill[]
+  participants         Participant[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
+}
+
+model Skill {
+  id       String         @id @default(cuid())
+  name     String         @unique
+  category String
+  projects ProjectSkill[]
+  users    UserSkill[]
+
+  @@map("skills")
+}
+
+model UserSkill {
+  userId  String
+  skillId String
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, skillId])
+  @@map("user_skills")
+}
+
+model Project {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  budgetMin   Float
+  budgetMax   Float
+  status      ProjectStatus  @default(OPEN)
+  category    String?
+  tags        String[]
+  imageUrl    String?
+  clientId    String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  aiLogs      AiLog[]
+  bids        Bid[]
+  contract    Contract?
+  skills      ProjectSkill[]
+  client      User           @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Cascade)
+  reports     Report[]
+  reviews     Review[]
+
+  @@map("projects")
+}
+
+model ProjectSkill {
+  projectId String
+  skillId   String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, skillId])
+  @@map("project_skills")
+}
+
+model Bid {
+  id           String    @id @default(cuid())
+  amount       Float
+  coverLetter  String
+  deliveryDays Int
+  status       BidStatus @default(PENDING)
+  projectId    String
+  freelancerId String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  aiLogs       AiLog[]
+  freelancer   User      @relation("FreelancerBids", fields: [freelancerId], references: [id], onDelete: Cascade)
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reports      Report[]
+
+  @@unique([projectId, freelancerId])
+  @@map("bids")
+}
+
+model Contract {
+  id           String         @id @default(cuid())
+  agreedAmount Float
+  status       ContractStatus @default(ACTIVE)
+  projectId    String         @unique
+  freelancerId String
+  clientId     String
+  startDate    DateTime       @default(now())
+  endDate      DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  client       User           @relation("ClientContracts", fields: [clientId], references: [id])
+  freelancer   User           @relation("FreelancerContracts", fields: [freelancerId], references: [id])
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("contracts")
+}
+
+model Conversation {
+  id           String        @id @default(cuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  participants Participant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model Participant {
+  id             String       @id @default(cuid())
+  userId         String
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
+  @@map("participants")
+}
+
+model Message {
+  id             String        @id @default(cuid())
+  content        String
+  senderId       String
+  conversationId String?
+  isRead         Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User          @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Review {
+  id         String     @id @default(cuid())
+  rating     Int
+  comment    String?
+  type       ReviewType
+  reviewerId String
+  revieweeId String
+  projectId  String
+  createdAt  DateTime   @default(now())
+  reports    Report[]
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reviewee   User       @relation("ReviewReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+  reviewer   User       @relation("ReviewGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, reviewerId])
+  @@map("reviews")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  body      String           // Reverted from message to body to fix build error
+  isRead    Boolean          @default(false)
+  userId    String
+  link      String?          // Added link for redirection
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model AiLog {
+  id         String        @id @default(cuid())
+  feature    AiFeatureType
+  status     AiStatus      @default(PENDING)
+  prompt     String
+  response   String?
+  tokensUsed Int?
+  errorMsg   String?
+  durationMs Int?
+  userId     String
+  projectId  String?
+  bidId      String?
+  createdAt  DateTime      @default(now())
+  bid        Bid?          @relation(fields: [bidId], references: [id])
+  project    Project?      @relation(fields: [projectId], references: [id])
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_logs")
+}
+
+model AiAnalytics {
+  id            String        @id @default(cuid())
+  date          DateTime      @db.Date
+  feature       AiFeatureType
+  totalCalls    Int           @default(0)
+  successCount  Int           @default(0)
+  errorCount    Int           @default(0)
+  totalTokens   Int           @default(0)
+  avgDurationMs Float?
+  uniqueUsers   Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([date, feature])
+  @@map("ai_analytics")
+}
+
+model Blog {
+  id                 String     @id @default(cuid())
+  title              String
+  slug               String     @unique
+  content            String
+  tags               String[]
+  status             BlogStatus @default(DRAFT)
+  authorId           String
+  publishedAt        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  coverImageUrl      String?
+  coverImagePublicId String?
+  author             User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("blogs")
+}
+
+model Portfolio {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  liveUrl       String?
+  githubUrl     String?
+  tags          String[]
+  freelancerId  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  imageUrl      String?
+  imagePublicId String?
+  freelancer    User     @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+
+  @@map("portfolios")
+}
+
+model Transaction {
+  id           String            @id @default(cuid())
+  amount       Float
+  status       TransactionStatus @default(PENDING)
+  contractId   String
+  clientId     String
+  freelancerId String
+  note         String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  client       User              @relation("ClientTransactions", fields: [clientId], references: [id])
+  contract     Contract          @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  freelancer   User              @relation("FreelancerTransactions", fields: [freelancerId], references: [id])
+
+  @@map("transactions")
+}
+
+model Report {
+  id         String       @id @default(cuid())
+  type       ReportType
+  reason     String
+  status     ReportStatus @default(PENDING)
+  reportedBy String
+  projectId  String?
+  reviewId   String?
+  bidId      String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  bid        Bid?         @relation(fields: [bidId], references: [id])
+  project    Project?     @relation(fields: [projectId], references: [id])
+  reporter   User         @relation("ReportedBy", fields: [reportedBy], references: [id], onDelete: Cascade)
+  review     Review?      @relation(fields: [reviewId], references: [id])
+
+  @@map("reports")
+}
+
+model Bookmark {
+  id        String       @id @default(cuid())
+  type      BookmarkType
+  userId    String
+  targetId  String
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetId, type])
+  @@map("bookmarks")
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  action    AuditAction
+  adminId   String
+  targetId  String
+  note      String?
+  metadata  Json?
+  createdAt DateTime    @default(now())
+  admin     User        @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+enum Role {
+  CLIENT
+  FREELANCER
+  SUPER_ADMIN
+}
+
+enum ProjectStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ContractStatus {
+  ACTIVE
+  COMPLETED
+  DISPUTED
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  BID_RECEIVED
+  BID_ACCEPTED
+  BID_REJECTED
+  CONTRACT_CREATED
+  CONTRACT_COMPLETED
+  MESSAGE_RECEIVED
+  REVIEW_RECEIVED
+  PROJECT_CLOSED
+  PAYMENT_RECEIVED
+  SYSTEM
+}
+
+enum AiFeatureType {
+  PROJECT_ARCHITECT
+  TALENT_MATCHER
+  INTERVIEW_BOT
+  DATA_INSIGHTS
+  COVER_LETTER_GENERATOR
+  PROFILE_OPTIMIZER
+  SKILL_GAP_ANALYZER
+  BUDGET_ESTIMATOR
+  BID_ANALYZER
+  FRAUD_DETECTOR
+  BLOG_GENERATOR
+  CHAT_ASSISTANT
+}
+
+enum AiStatus {
+  SUCCESS
+  ERROR
+  PENDING
+}
+
+enum ReviewType {
+  CLIENT_TO_FREELANCER
+  FREELANCER_TO_CLIENT
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum ReportType {
+  PROJECT
+  USER
+  REVIEW
+  BID
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+enum AuditAction {
+  USER_BANNED
+  USER_ACTIVATED
+  USER_ROLE_CHANGED
+  PROJECT_REMOVED
+  REVIEW_REMOVED
+  BID_REMOVED
+  REPORT_RESOLVED
+  BLOG_PUBLISHED
+  BLOG_REMOVED
+  SYSTEM_NOTIFICATION_SENT
+}
+
+enum BookmarkType {
+  PROJECT
+  FREELANCER
+}
+
+
+enum ApplicationStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faqs")
+}
