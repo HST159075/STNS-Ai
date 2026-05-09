@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
+import { notificationService } from '../services/notificationService';
 
 export const createContract = async (req: Request, res: Response) => {
   const { agreedAmount, projectId, freelancerId, clientId } = req.body;
@@ -13,12 +14,25 @@ export const createContract = async (req: Request, res: Response) => {
         clientId: String(clientId),
         status: 'ACTIVE',
       },
+      include: {
+        project: true,
+        client: { select: { name: true } }
+      }
     });
 
     // Update project status to IN_PROGRESS
     await prisma.project.update({
       where: { id: String(projectId) },
       data: { status: 'IN_PROGRESS' },
+    });
+
+    // Notify Freelancer
+    await notificationService.send({
+      userId: freelancerId,
+      type: 'CONTRACT_CREATED',
+      title: 'You were Hired!',
+      message: `${contract.client.name} hired you for the project: ${contract.project.title}`,
+      link: `/bookings`
     });
 
     res.status(201).json({ success: true, contract });
