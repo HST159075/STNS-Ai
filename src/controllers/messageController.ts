@@ -146,13 +146,14 @@ export const sendDirectMessage = async (req: Request, res: Response) => {
     });
 
     if (otherParticipant) {
-      await createNotification(
-        otherParticipant.userId,
-        'MESSAGE_RECEIVED',
-        `New Message from ${message.sender.name}`,
-        content.length > 50 ? content.substring(0, 50) + '...' : content,
-        { conversationId, senderId }
-      );
+      // User requested not to show messages in general notifications
+      // await createNotification(
+      //   otherParticipant.userId,
+      //   'MESSAGE_RECEIVED',
+      //   `New Message from ${message.sender.name}`,
+      //   content.length > 50 ? content.substring(0, 50) + '...' : content,
+      //   { conversationId, senderId }
+      // );
     }
 
     // Emit message via socket
