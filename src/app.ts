@@ -55,8 +55,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// Auth Routes Handler for Better Auth
-app.all('*', (req, res, next) => {
+// Auth Routes Handler for Better Auth (Middleware style to avoid path-to-regexp issues)
+app.use((req, res, next) => {
   if (req.path.startsWith('/api/auth')) {
     return toNodeHandler(auth)(req, res);
   }
