@@ -55,9 +55,12 @@ app.use(cors({
 
 app.use(express.json());
 
-// Auth Routes with strict rate limiting and Better Auth handler
-app.use('/api/auth', authLimiter, (req, res) => {
-  return toNodeHandler(auth)(req, res);
+// Auth Routes Handler for Better Auth
+app.all('*', (req, res, next) => {
+  if (req.path.startsWith('/api/auth')) {
+    return toNodeHandler(auth)(req, res);
+  }
+  next();
 });
 
 // Apply global rate limiter to all other API requests
