@@ -55,7 +55,7 @@ app.use(cors({
 
 // Auth Routes with strict rate limiting
 app.use('/api/auth', authLimiter);
-app.all('/api/auth/*', toNodeHandler(auth));
+app.all('/api/auth/:path*', toNodeHandler(auth));
 
 app.use(express.json());
 
