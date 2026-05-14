@@ -53,11 +53,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie'],
 }));
 
-// Auth Routes with strict rate limiting
-app.use('/api/auth', authLimiter);
-app.all(/^\/api\/auth\/.*/, toNodeHandler(auth));
-
 app.use(express.json());
+
+// Auth Routes with strict rate limiting and Better Auth handler
+app.use('/api/auth', authLimiter, (req, res) => {
+  return toNodeHandler(auth)(req, res);
+});
 
 // Apply global rate limiter to all other API requests
 app.use('/api/', globalLimiter);
