@@ -16,6 +16,7 @@ import logger from './utils/logger';
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', true);
 
 // Set security HTTP headers
 app.use(helmet());
