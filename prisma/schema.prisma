@@ -1,5 +1,5 @@
 generator client {
-  provider   = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -8,63 +8,57 @@ datasource db {
 }
 
 model User {
-  id            String    @id
-  name          String
-  email         String    @unique
-  emailVerified Boolean @default(false)
-  image         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Custom Marketplace Fields
-  role           Role     @default(CLIENT)
-  isOnboarded    Boolean  @default(false)
-  isActive       Boolean  @default(true)
-  firstName      String?
-  lastName       String?
-  dob            DateTime?
-  nationality    String?
-  phoneNumber    String?
-  serviceType    String?
-  avatarUrl      String?
-  avatarPublicId String?
-  bio            String?
-  location       String?
-  hourlyRate     Float?
-  portfolioUrl   String?
-  githubUrl      String?
-  completedJobs  Int      @default(0)
-  activeJobs     Int      @default(0)
-  totalEarnings  Float    @default(0)
-  avgRating      Float    @default(0)
-  totalReviews   Int      @default(0)
-  successRate    Float    @default(0)
-  
-  // Application Fields
-  applicationStatus ApplicationStatus @default(NONE)
+  id                        String            @id
+  name                      String
+  email                     String            @unique
+  emailVerified             Boolean           @default(false)
+  image                     String?
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
+  role                      Role              @default(CLIENT)
+  isOnboarded               Boolean           @default(false)
+  isActive                  Boolean           @default(true)
+  firstName                 String?
+  lastName                  String?
+  dob                       DateTime?
+  nationality               String?
+  phoneNumber               String?
+  serviceType               String?
+  avatarUrl                 String?
+  avatarPublicId            String?
+  bio                       String?
+  location                  String?
+  hourlyRate                Float?
+  portfolioUrl              String?
+  githubUrl                 String?
+  completedJobs             Int               @default(0)
+  activeJobs                Int               @default(0)
+  totalEarnings             Float             @default(0)
+  avgRating                 Float             @default(0)
+  totalReviews              Int               @default(0)
+  successRate               Float             @default(0)
+  applicationStatus         ApplicationStatus @default(NONE)
   freelancerApplicationData Json?
-
-  // Relations
-  sessions             Session[]
-  accounts             Account[]
-  aiLogs               AiLog[]
-  auditLogs            AuditLog[]     @relation("AdminAuditLogs")
-  bids                 Bid[]          @relation("FreelancerBids")
-  blogs                Blog[]
-  bookmarks            Bookmark[]
-  clientContracts      Contract[]     @relation("ClientContracts")
-  freelanceContracts   Contract[]     @relation("FreelancerContracts")
-  sentMessages         Message[]      @relation("SentMessages")
-  notifications        Notification[]
-  portfolios           Portfolio[]
-  postedProjects       Project[]      @relation("ClientProjects")
-  reports              Report[]       @relation("ReportedBy")
-  receivedReviews      Review[]       @relation("ReviewReceived")
-  givenReviews         Review[]       @relation("ReviewGiven")
-  sentTransactions     Transaction[]  @relation("ClientTransactions")
-  receivedTransactions Transaction[]  @relation("FreelancerTransactions")
-  skills               UserSkill[]
-  participants         Participant[]
+  accounts                  Account[]
+  aiLogs                    AiLog[]
+  auditLogs                 AuditLog[]        @relation("AdminAuditLogs")
+  bids                      Bid[]             @relation("FreelancerBids")
+  blogs                     Blog[]
+  bookmarks                 Bookmark[]
+  clientContracts           Contract[]        @relation("ClientContracts")
+  freelanceContracts        Contract[]        @relation("FreelancerContracts")
+  sentMessages              Message[]         @relation("SentMessages")
+  notifications             Notification[]
+  participants              Participant[]
+  portfolios                Portfolio[]
+  postedProjects            Project[]         @relation("ClientProjects")
+  reports                   Report[]          @relation("ReportedBy")
+  receivedReviews           Review[]          @relation("ReviewReceived")
+  givenReviews              Review[]          @relation("ReviewGiven")
+  sessions                  Session[]
+  sentTransactions          Transaction[]     @relation("ClientTransactions")
+  receivedTransactions      Transaction[]     @relation("FreelancerTransactions")
+  skills                    UserSkill[]
 
   @@map("user")
 }
@@ -72,7 +66,7 @@ model User {
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -80,7 +74,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
@@ -89,7 +82,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -97,8 +89,9 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }
@@ -154,7 +147,7 @@ model Project {
   client      User           @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Cascade)
   reports     Report[]
   reviews     Review[]
-  
+
   @@index([status])
   @@index([clientId])
   @@map("projects")
@@ -215,8 +208,8 @@ model Conversation {
   id           String        @id @default(cuid())
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  participants Participant[]
   messages     Message[]
+  participants Participant[]
 
   @@map("conversations")
 }
@@ -238,9 +231,9 @@ model Message {
   senderId       String
   conversationId String?
   isRead         Boolean       @default(false)
-  attachmentUrl  String?
-  attachmentType String?
   createdAt      DateTime      @default(now())
+  attachmentType String?
+  attachmentUrl  String?
   conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User          @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
@@ -271,10 +264,10 @@ model Notification {
   id        String           @id @default(cuid())
   type      NotificationType
   title     String
-  body      String           // Reverted from message to body to fix build error
+  body      String
   isRead    Boolean          @default(false)
   userId    String
-  link      String?          // Added link for redirection
+  link      String?
   metadata  Json?
   createdAt DateTime         @default(now())
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -417,6 +410,18 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faqs")
+}
+
 enum Role {
   CLIENT
   FREELANCER
@@ -531,22 +536,9 @@ enum BookmarkType {
   FREELANCER
 }
 
-
 enum ApplicationStatus {
   NONE
   PENDING
   APPROVED
   REJECTED
-}
-
-model Faq {
-  id        String   @id @default(cuid())
-  question  String
-  answer    String
-  order     Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("faqs")
 }

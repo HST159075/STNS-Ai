@@ -1,5 +1,6 @@
 services:
   - type: web
+  
     name: stns-ai-backend
     runtime: node
     plan: free
@@ -11,8 +12,8 @@ services:
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: BETTER_AUTH_URL
-        value: https://stns-ai.onrender.com/api/auth
+        value: https://stns-ai-1eeo.onrender.com/api/auth
       - key: FRONTEND_URL
-        value: https://nexus-jjvc.onrender.com
+        value: https://nexus-ai-mo5u.onrender.com
       - key: PORT
         value: 10000
