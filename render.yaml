@@ -12,7 +12,7 @@ services:
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: BETTER_AUTH_URL
-        value: https://stns-ai-1eeo.onrender.com/api/auth
+        value: https://stns-ai-1eeo.onrender.com
       - key: FRONTEND_URL
         value: https://nexus-ai-mo5u.onrender.com
       - key: PORT
