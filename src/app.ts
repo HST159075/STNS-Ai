@@ -57,13 +57,15 @@ app.use(cors({
   exposedHeaders: ['Set-Cookie'],
 }));
 
-// Handle OPTIONS preflight for all routes
-app.options('*', cors());
-
 app.use(express.json());
 
-// ✅ Better Auth handler — must come AFTER cors but BEFORE other routes
-app.all('/api/auth/*', toNodeHandler(auth));
+// ✅ Better Auth handler — middleware pattern avoids path-to-regexp wildcard issues
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/auth')) {
+    return toNodeHandler(auth)(req, res);
+  }
+  next();
+});
 
 // Apply global rate limiter to API requests
 app.use('/api/', globalLimiter);
